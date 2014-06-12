@@ -23,3 +23,6 @@ mvn package
 
 Deploy your application by copying the war file into your <i>red5/webapps</i> directory.
 
+Pre-compiled WAR
+----------------
+https://mega.co.nz/#!YQ12DBLB!jbey-QDIwC_zveM5K2yPpMVBBCTr0025siv6YRvl-Fg

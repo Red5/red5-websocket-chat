@@ -23,6 +23,8 @@ mvn package
 
 Deploy your application by copying the war file into your <i>red5/webapps</i> directory.
 
+After deploy is complete, go to http://localhost:5080/chat/ in your browser (open two tabs if you want to chat back and forth on the same computer).
+
 Pre-compiled WAR
 ----------------
 https://mega.co.nz/#!YQ12DBLB!jbey-QDIwC_zveM5K2yPpMVBBCTr0025siv6YRvl-Fg

@@ -30,6 +30,8 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
 		setProtocol("chat");
 	}
 
+	private Router router;
+	
 	private Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
 	
 	@Override
@@ -68,10 +70,13 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
 			message.getConnection().close();
 			return;
 		}
+		// get the connection path for routing
+		String path = message.getConnection().getPath();
+		log.debug("WebSocket connection path: {}", path);
 		// assume we have text
 		String msg = new String(message.getPayload().array()).trim();
 		log.info("onWSMessage: {}\n{}", msg, message.getConnection());
-		// do a quick json check
+		// do a quick hacky json check
 		if (msg.indexOf('{') != -1 && msg.indexOf(':') != -1) {
 			log.info("JSON encoded text message");
 			// channelName == roomid in most cases
@@ -80,24 +85,45 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
 			try {
 				obj = (JSONObject) parser.parse(msg);
 				log.debug("Parsed - keys: {}\ncontent: {}", obj.keySet(), obj);
-				for (WebSocketConnection conn : connections) {
-					try {
-						conn.send(JSONValue.toJSONString(obj));
-					} catch (UnsupportedEncodingException e) {
-					}
-				}
+				msg = JSONValue.toJSONString(obj);
+				// send to all websocket connections matching this connections path
+				sendToAll(path, msg);
+				// send to the shared object matching this connections path
+				router.route(path, msg);
 			} catch (ParseException e) {
 				log.warn("Exception parsing JSON", e);
 			}
 		} else {
 			log.info("Standard text message");
-			for (WebSocketConnection conn : connections) {
+			// send to all websocket connections matching this connections path
+			sendToAll(path, msg);
+			// send to the shared object matching this connections path
+			router.route(path, msg);
+		}
+	}
+
+	/**
+	 * Send message to all connected connections.
+	 * 
+	 * @param path
+	 * @param msg
+	 */
+	public void sendToAll(String path, String message) {			
+		for (WebSocketConnection conn : connections) {
+			if (path.equals(conn.getPath())) {
 				try {
-					conn.send(msg);
+					conn.send(message);
 				} catch (UnsupportedEncodingException e) {
 				}
+			} else {
+				log.trace("Path did not match for message {} != {}", path, conn.getPath());
 			}
 		}
+	}
+
+	public void setRouter(Router router) {
+		this.router = router;
+		this.router.setWsListener(this);
 	}
 
 }

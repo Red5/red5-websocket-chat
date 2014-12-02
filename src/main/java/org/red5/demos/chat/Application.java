@@ -18,7 +18,6 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class Application extends MultiThreadedApplicationAdapter implements ApplicationContextAware {
 
-	@SuppressWarnings("unused")
 	private static Logger log = Red5LoggerFactory.getLogger(Application.class, "chat");
 
 	@SuppressWarnings("unused")
@@ -31,6 +30,7 @@ public class Application extends MultiThreadedApplicationAdapter implements Appl
 
 	@Override
 	public boolean appStart(IScope scope) {
+		log.info("Chat starting");
 		// add our application to enable websocket support
 		WebSocketScopeManager manager = ((WebSocketPlugin) PluginRegistry.getPlugin("WebSocketPlugin")).getManager();
 		manager.addApplication(scope);
@@ -39,6 +39,7 @@ public class Application extends MultiThreadedApplicationAdapter implements Appl
 
 	@Override
 	public void appStop(IScope scope) {
+		log.info("Chat stopping");
 		// remove our app
 		WebSocketScopeManager manager = ((WebSocketPlugin) PluginRegistry.getPlugin("WebSocketPlugin")).getManager();
 		manager.removeApplication(scope);

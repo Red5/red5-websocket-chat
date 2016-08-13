@@ -28,4 +28,5 @@ After deploy is complete, go to http://localhost:5080/chat/ in your browser (ope
 Pre-compiled WAR
 ----------------
 You can find [compiled artifacts via Maven](http://mvnrepository.com/artifact/org.red5.demos/chat)
+
 [Direct Download](https://oss.sonatype.org/content/repositories/releases/org/red5/demos/chat/1.1/chat-1.1.war)

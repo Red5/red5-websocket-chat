@@ -2,6 +2,7 @@ package org.red5.demos.chat;
 
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.net.websocket.WebSocketPlugin;
+import org.red5.net.websocket.WebSocketScope;
 import org.red5.net.websocket.WebSocketScopeManager;
 import org.red5.server.adapter.MultiThreadedApplicationAdapter;
 import org.red5.server.api.scope.IScope;
@@ -20,7 +21,6 @@ public class Application extends MultiThreadedApplicationAdapter implements Appl
 
     private static Logger log = Red5LoggerFactory.getLogger(Application.class, "chat");
 
-    @SuppressWarnings("unused")
     private ApplicationContext applicationContext;
 
     @Override
@@ -31,9 +31,16 @@ public class Application extends MultiThreadedApplicationAdapter implements Appl
     @Override
     public boolean appStart(IScope scope) {
         log.info("Chat starting");
-        // add our application to enable websocket support
-        WebSocketScopeManager manager = ((WebSocketPlugin) PluginRegistry.getPlugin("WebSocketPlugin")).getManager();
-        manager.addApplication(scope);
+        // get the websocket plugin
+        WebSocketPlugin wsPlugin = (WebSocketPlugin) PluginRegistry.getPlugin("WebSocketPlugin");
+        // add this application to it
+        wsPlugin.setApplication(this);
+        // get the manager
+        WebSocketScopeManager manager = wsPlugin.getManager(scope);
+        // get the ws scope
+        WebSocketScope defaultWebSocketScope = (WebSocketScope) applicationContext.getBean("webSocketScopeDefault");
+        // add the ws scope
+        manager.addWebSocketScope(defaultWebSocketScope);
         return super.appStart(scope);
     }
 
@@ -41,8 +48,9 @@ public class Application extends MultiThreadedApplicationAdapter implements Appl
     public void appStop(IScope scope) {
         log.info("Chat stopping");
         // remove our app
-        WebSocketScopeManager manager = ((WebSocketPlugin) PluginRegistry.getPlugin("WebSocketPlugin")).getManager();
+        WebSocketScopeManager manager = ((WebSocketPlugin) PluginRegistry.getPlugin("WebSocketPlugin")).getManager(scope);
         manager.removeApplication(scope);
+        manager.stop();
         super.appStop(scope);
     }
 

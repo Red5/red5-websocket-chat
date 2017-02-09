@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:lang="http://www.springframework.org/schema/lang"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd                            
-    http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-4.0.xsd">
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd">
 
     <bean id="placeholderConfig"
         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -31,12 +31,10 @@
     </bean>
 
     <!-- WebSocket scope with our listeners -->
-    <bean id="webSocketScopeDefault" class="org.red5.net.websocket.WebSocketScope">
+    <bean id="webSocketScopeDefault" class="org.red5.net.websocket.WebSocketScope" lazy-init="true">
         <!-- Application scope -->
-        <property name="scope" ref="web.scope" />
-        <!-- The path to which this scope is attached. The special value of "default" 
-            means that it will be added to all paths -->
-        <property name="path" value="default" />
+        <constructor-arg ref="web.scope" />
+        <!-- The ws scope listeners -->
         <property name="listeners">
             <list>
                 <bean id="chatListener" class="org.red5.demos.chat.WebSocketChatDataListener">

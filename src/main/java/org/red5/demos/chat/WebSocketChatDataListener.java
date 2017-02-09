@@ -126,4 +126,8 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
         this.router.setWsListener(this);
     }
 
+    @Override
+    public void stop() {
+    }
+
 }

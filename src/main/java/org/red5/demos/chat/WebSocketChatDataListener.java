@@ -3,6 +3,9 @@ package org.red5.demos.chat;
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
@@ -33,6 +36,10 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
     private Router router;
 
     private Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
+
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private Future<?> pinger;
 
     @Override
     public void onWSConnect(WebSocketConnection conn) {
@@ -124,10 +131,36 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
     public void setRouter(Router router) {
         this.router = router;
         this.router.setWsListener(this);
+        // add a pinger
+        if (pinger == null) {
+            pinger = executor.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    do {
+                        try {
+                            // sleep 2 seconds
+                            Thread.sleep(2000L);
+                            // create a ping packet
+                            byte[] ping = "PING!".getBytes();
+                            // loop through the connections and ping them
+                            connections.forEach(conn -> {
+                                conn.send(ping);
+                            });
+                        } catch (InterruptedException e) {
+                            log.warn("Exception in pinger", e);
+                        }
+                    } while (true);
+                }
+
+            });
+        }
     }
 
     @Override
     public void stop() {
+        // stop the pinging
+        executor.shutdownNow();
     }
 
 }

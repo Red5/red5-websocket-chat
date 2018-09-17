@@ -21,9 +21,15 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.js"></script>
     <script>
     $(document).ready(function(){
-      var socket = new WebSocket('ws://' + window.location.hostname + ':8081/chat', 'chat');
+      var protocol = window.location.protocol === 'http:' ? 'ws' : 'wss';
+      var port = window.location.protocol === 'http:' ? '8081' : '8083';
+      var socket = new WebSocket(protocol + '://' + window.location.hostname + ':' + port + '/chat', 'chat');
       socket.onmessage = function(event){
-        $('#messages').append($('<li>').text(event.data));
+        if (event.data instanceof Blob) {
+          console.log('Blob received: ' + event.data);
+        } else {
+          $('#messages').append($('<li>').text(event.data));
+        }
       };
       $('form').submit(function(){
         socket.send($('#m').val());

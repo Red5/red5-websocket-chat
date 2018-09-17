@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.red5.logging.Red5LoggerFactory;
+import org.red5.server.adapter.ApplicationLifecycle;
 import org.red5.server.api.IAttributeStore;
 import org.red5.server.api.Red5;
 import org.red5.server.api.scope.IScope;
@@ -103,6 +104,17 @@ public class Router {
 
     public void setApp(Application app) {
         this.app = app;
+        this.app.addListener(new ApplicationLifecycle() {
+
+            @Override
+            public void appStop(IScope scope) {
+                if (wsListener != null) {
+                    wsListener.stop();
+                }
+
+            }
+
+        });
     }
 
     public void setWsListener(WebSocketChatDataListener wsListener) {

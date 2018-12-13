@@ -2,6 +2,8 @@ package org.red5.demos.chat;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,16 +45,16 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
     @Override
     public void onWSConnect(WebSocketConnection conn) {
         log.info("Connect: {}", conn);
-        if (conn.getHeaders().containsKey(WSConstants.WS_HEADER_PROTOCOL)) {
+        Optional<List<String>> header = Optional.ofNullable(conn.getHeaders().get(WSConstants.WS_HEADER_PROTOCOL));
+        if (header.isPresent()) {
             log.debug("Protocol header exists");
-            /*
-            String protocol = (String) conn.getHeaders().get(WSConstants.WS_HEADER_PROTOCOL);
-            if (protocol.indexOf("chat") != -1) {
+            String protocol = header.get().get(0);
+            if (protocol.contains("chat")) {
                 log.debug("Chat enabled");
+                conn.setProtocol(protocol);
             } else {
                 log.info("Chat is not in the connections protocol list");
             }
-            */
         }
         connections.add(conn);
     }

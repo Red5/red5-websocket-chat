@@ -30,8 +30,8 @@ public class Router {
     /**
      * Routes a message on a given path to the associated shared object.
      * 
-     * @param path
-     * @param message
+     * @param path shared object path / name
+     * @param message string
      */
     public void route(String path, String message) {
         log.debug("Route to Shared Object: {} with {}", path, message);
@@ -48,8 +48,8 @@ public class Router {
     /**
      * Routes a message on a given scope to the associated websocket connections.
      * 
-     * @param scope
-     * @param message
+     * @param scope application or room scope
+     * @param message string
      */
     public void route(IScope scope, String message) {
         // scope.path = /default scope.name = chat
@@ -66,7 +66,7 @@ public class Router {
     /**
      * Get the chat shared object for a given path.
      * 
-     * @param path
+     * @param path shared object path / name
      * @return the shared object for the path or null if its not available
      */
     private ISharedObject getSharedObject(String path) {

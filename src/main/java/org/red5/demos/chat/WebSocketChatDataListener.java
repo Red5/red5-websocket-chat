@@ -13,10 +13,9 @@ import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
 import org.red5.logging.Red5LoggerFactory;
-import org.red5.net.websocket.Constants;
+import org.red5.net.websocket.WSConstants;
 import org.red5.net.websocket.WebSocketConnection;
 import org.red5.net.websocket.listener.WebSocketDataListener;
-import org.red5.net.websocket.model.MessageType;
 import org.red5.net.websocket.model.WSMessage;
 import org.slf4j.Logger;
 
@@ -44,13 +43,16 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
     @Override
     public void onWSConnect(WebSocketConnection conn) {
         log.info("Connect: {}", conn);
-        if (conn.getHeaders().containsKey(Constants.WS_HEADER_PROTOCOL)) {
-            String protocol = (String) conn.getHeaders().get(Constants.WS_HEADER_PROTOCOL);
+        if (conn.getHeaders().containsKey(WSConstants.WS_HEADER_PROTOCOL)) {
+            log.debug("Protocol header exists");
+            /*
+            String protocol = (String) conn.getHeaders().get(WSConstants.WS_HEADER_PROTOCOL);
             if (protocol.indexOf("chat") != -1) {
                 log.debug("Chat enabled");
             } else {
                 log.info("Chat is not in the connections protocol list");
             }
+            */
         }
         connections.add(conn);
     }
@@ -66,15 +68,6 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
         // if its protocol doesn't match then skip the message
         if (!protocol.equals(message.getConnection().getProtocol())) {
             log.debug("Skipping message due to protocol mismatch");
-            return;
-        }
-        // ignore ping and pong
-        if (message.getMessageType() == MessageType.PING || message.getMessageType() == MessageType.PONG) {
-            return;
-        }
-        // close if we get a close
-        if (message.getMessageType() == MessageType.CLOSE) {
-            message.getConnection().close();
             return;
         }
         // get the connection path for routing
@@ -112,8 +105,8 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
     /**
      * Send message to all connected connections.
      * 
-     * @param path
-     * @param msg
+     * @param path routable path / name
+     * @param message string
      */
     public void sendToAll(String path, String message) {
         for (WebSocketConnection conn : connections) {

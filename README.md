@@ -5,10 +5,12 @@ Red5 WebSocket chat application example.
 
 The example <i>index.html</i> defaults to using a WebSocket connection to localhost on port 5080. This means that the host and port are riding the same host and port as the http connector which is configured in the <i>red5/conf/jee-container.xml</i> file. Two new steps are required to migrate from the previous versions:
  # Add the `websocketEnabled` to the Tomcat server entry in the `conf/jee-container.xml` file
+ 
     ```xml
        <property name="websocketEnabled" value="true" />
     ```
  # Add the WebSocket filter servlet to webapps that require WebSocket support
+ 
     ```xml
         <filter>
             <filter-name>WebSocketFilter</filter-name>
@@ -24,6 +26,7 @@ The example <i>index.html</i> defaults to using a WebSocket connection to localh
     ```
 
 Lastly, remove any separate `webSocketTransport` beans from the `conf/jee-container.xml` file.
+
 ```xml
 <bean id="webSocketTransport" class="org.red5.net.websocket.WebSocketTransport">
     <property name="addresses">

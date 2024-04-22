@@ -1,6 +1,5 @@
 package org.red5.demos.chat;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -9,17 +8,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import net.minidev.json.JSONObject;
-import net.minidev.json.JSONValue;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
-
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.net.websocket.WSConstants;
 import org.red5.net.websocket.WebSocketConnection;
 import org.red5.net.websocket.listener.WebSocketDataListener;
 import org.red5.net.websocket.model.WSMessage;
 import org.slf4j.Logger;
+
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 
 /**
  * Handler / router for chat data.
@@ -115,7 +114,8 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
             if (path.equals(conn.getPath())) {
                 try {
                     conn.send(message);
-                } catch (UnsupportedEncodingException e) {
+                } catch (Exception e) {
+                    log.warn("Exception sending message", e);
                 }
             } else {
                 log.trace("Path did not match for message {} != {}", path, conn.getPath());
@@ -128,26 +128,27 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
         this.router.setWsListener(this);
         // add a pinger
         if (pinger == null) {
-            pinger = executor.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    do {
-                        try {
-                            // sleep 2 seconds
-                            Thread.sleep(2000L);
-                            // create a ping packet
-                            byte[] ping = "PING!".getBytes();
-                            // loop through the connections and ping them
-                            connections.forEach(conn -> {
+            pinger = executor.submit(() -> {
+                do {
+                    try {
+                        // sleep 2 seconds
+                        Thread.sleep(2000L);
+                        // create a ping packet
+                        byte[] ping = "PING!".getBytes();
+                        // loop through the connections and ping them
+                        connections.forEach(conn -> {
+                            try {
                                 conn.send(ping);
-                            });
-                        } catch (InterruptedException e) {
-                            log.warn("Exception in pinger", e);
-                        }
-                    } while (true);
-                }
-
+                            } catch (Exception e) {
+                                log.warn("Exception sending ping", e);
+                            }
+                        });
+                    } catch (InterruptedException e) {
+                        log.warn("Exception in pinger", e);
+                    } catch (Exception e) {
+                        log.warn("Exception in pinger", e);
+                    }
+                } while (true);
             });
         }
     }

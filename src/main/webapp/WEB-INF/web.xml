@@ -12,7 +12,7 @@
     <filter>
         <filter-name>WebSocketFilter</filter-name>
         <filter-class>org.red5.net.websocket.server.WsFilter</filter-class>
-        <async-supported>true</async-supported>
+        <async-supported>false</async-supported>
     </filter>
     <filter-mapping>
         <filter-name>WebSocketFilter</filter-name>

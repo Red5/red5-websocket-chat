@@ -4,21 +4,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-import org.red5.logging.Red5LoggerFactory;
 import org.red5.net.websocket.WSConstants;
 import org.red5.net.websocket.WebSocketConnection;
 import org.red5.net.websocket.listener.WebSocketDataListener;
 import org.red5.net.websocket.model.WSMessage;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import net.minidev.json.JSONObject;
-import net.minidev.json.JSONValue;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Handler / router for chat data.
@@ -27,7 +22,7 @@ import net.minidev.json.parser.ParseException;
  */
 public class WebSocketChatDataListener extends WebSocketDataListener {
 
-    private static final Logger log = Red5LoggerFactory.getLogger(WebSocketChatDataListener.class, "chat");
+    private static final Logger log = LoggerFactory.getLogger(WebSocketChatDataListener.class);
 
     {
         setProtocol("chat");
@@ -35,11 +30,7 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
 
     private Router router;
 
-    private Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
-
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    private Future<?> pinger;
+    private Set<WebSocketConnection> connections = new HashSet<>();
 
     @Override
     public void onWSConnect(WebSocketConnection conn) {
@@ -81,17 +72,15 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
         if (msg.indexOf('{') != -1 && msg.indexOf(':') != -1) {
             log.info("JSON encoded text message");
             // channelName == roomid in most cases
-            JSONObject obj = null;
-            JSONParser parser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
             try {
-                obj = (JSONObject) parser.parse(msg);
+                JsonObject obj = JsonParser.parseString(msg).getAsJsonObject();
                 log.debug("Parsed - keys: {}\ncontent: {}", obj.keySet(), obj);
-                msg = JSONValue.toJSONString(obj);
+                msg = obj.toString();
                 // send to all websocket connections matching this connections path
                 sendToAll(path, msg);
                 // send to the shared object matching this connections path
                 router.route(path, msg);
-            } catch (ParseException e) {
+            } catch (Exception e) {
                 log.warn("Exception parsing JSON", e);
             }
         } else {
@@ -126,37 +115,12 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
     public void setRouter(Router router) {
         this.router = router;
         this.router.setWsListener(this);
-        // add a pinger
-        if (pinger == null) {
-            pinger = executor.submit(() -> {
-                do {
-                    try {
-                        // sleep 2 seconds
-                        Thread.sleep(2000L);
-                        // create a ping packet
-                        byte[] ping = "PING!".getBytes();
-                        // loop through the connections and ping them
-                        connections.forEach(conn -> {
-                            try {
-                                conn.send(ping);
-                            } catch (Exception e) {
-                                log.warn("Exception sending ping", e);
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                        log.warn("Exception in pinger", e);
-                    } catch (Exception e) {
-                        log.warn("Exception in pinger", e);
-                    }
-                } while (true);
-            });
-        }
     }
 
     @Override
     public void stop() {
-        // stop the pinging
-        executor.shutdownNow();
+        connections.forEach(wc -> wc.close());
+        connections.clear();
     }
 
 }

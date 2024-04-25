@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
 	<contextName>chat</contextName>
-	
+
 	<jmxConfigurator contextName="chat" />
-	
+
 	<appender name="chat" class="ch.qos.logback.core.FileAppender">
 		<File>log/chat.log</File>
 		<Append>false</Append>
@@ -17,10 +16,10 @@
 			</Pattern>
 		</layout>
 	</appender>
-		
+
 	<root>
 		<level value="TRACE" />
-        <appender-ref ref="chat" />
+		<appender-ref ref="chat" />
 	</root>
-						
+
 </configuration>

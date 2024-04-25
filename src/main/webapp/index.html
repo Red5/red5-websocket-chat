@@ -18,28 +18,41 @@
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script>
     $(document).ready(function(){
       var opened = false;
       var protocol = window.location.protocol === 'http:' ? 'ws' : 'wss';
-      var port = window.location.protocol === 'http:' ? '8081' : '8083';
+      var port = window.location.protocol === 'http:' ? '5080' : '443';
       try {
-        var socket = new WebSocket(protocol + '://' + window.location.hostname + ':' + port + '/chat', 'chat');
-        socket.onmessage = function(event){
-          // if we get a message, we're open
+        /*
+         if we're hitting a red5pro server, ensure the port is 5080 and wsonly is true (for websocket only mode)
+          ?capabilities=1  : WebSocket Connection only
+          ?capabilities=2  : SharedObject Connection only
+          ?capabilities=3  : RTCConnection
+        */
+        var socket = new WebSocket(protocol + '://' + window.location.hostname + ':' + port + '/chat/?capabilities=2');
+        // std red5
+        //var socket = new WebSocket(protocol + '://' + window.location.hostname + ':' + port + '/chat', 'chat');
+        // Connection opened
+        socket.addEventListener("open", (event) => {
+          console.log("WebSocket is open");
           opened = true;
+          // using shared object get remote and connect before proceeding
+          socket.send('{"sharedObjectGetRemote":{"name":"chat"}}');
+          socket.send('{"sharedObjectConnect":{"name":"chat"}}');
+        });
+
+        // Listen for messages
+        socket.addEventListener("message", (event) => {
+          console.log("Message from server ", event.data);
+          // if we get a message, we're open
           if (event.data instanceof Blob) {
             console.log('Blob received: ' + event.data);
           } else {
             $('#messages').append($('<li>').text(event.data));
           }
-        };
-        // if the browser is Firefox, attaching this event can cause a wss connection to fail every-other-attempt on macOS and Windows.
-        socket.onopen = function(event) {
-          console.log("WebSocket is open");
-          opened = true;
-        };
+        });
         socket.onerror = function(err){
           console.error(err);
         };
@@ -53,7 +66,11 @@
       $('form').submit(function(){
         if (socket) {
           console.log('bufferedAmount: ' + socket.bufferedAmount);
-          socket.send($('#m').val());
+          // dirty json
+          //socket.send('{"send":{"data":{"message":"' + $('#m').val() + '"}}}');
+          // shared object
+          socket.send('{"sharedObjectSend":{"name":"chat","method":"messageTransmit","message":{"data":"' + $('#m').val() + '"}}}');
+          //socket.send($('#m').val());
         } else {
           console.log('No open socket available for sending...')
         }

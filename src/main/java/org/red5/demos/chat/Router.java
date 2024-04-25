@@ -3,7 +3,6 @@ package org.red5.demos.chat;
 import java.util.List;
 import java.util.Map;
 
-import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.adapter.ApplicationLifecycle;
 import org.red5.server.api.IAttributeStore;
 import org.red5.server.api.Red5;
@@ -13,6 +12,7 @@ import org.red5.server.api.so.ISharedObjectBase;
 import org.red5.server.api.so.ISharedObjectListener;
 import org.red5.server.util.ScopeUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Router for chat messages between WebSockets and an associated SharedObject.
@@ -21,7 +21,7 @@ import org.slf4j.Logger;
  */
 public class Router {
 
-    private static Logger log = Red5LoggerFactory.getLogger(Router.class, "chat");
+    private static Logger log = LoggerFactory.getLogger(Router.class);
 
     private Application app;
 
@@ -111,7 +111,6 @@ public class Router {
                 if (wsListener != null) {
                     wsListener.stop();
                 }
-
             }
 
         });

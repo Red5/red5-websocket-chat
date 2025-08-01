@@ -26,7 +26,7 @@ Build the application from the command line with
 mvn package
 ```
 
-Deploy your application by copying the war file into your <i>red5/webapps</i> directory. If the war file does not deploy withing a few minutes, this may indicate the war deployer bean is not created or running; a work-around is to expand the war contents into the webapps directory manually and restart Red5.
+Deploy your application by copying the war file into your `red5/webapps` directory. If the war file does not deploy withing a few minutes, this may indicate the war deployer bean is not created or running; a work-around is to expand the war contents into the webapps directory manually and restart Red5.
 
 After deploy is complete, go to http://localhost:5080/chat/ in your browser (open two tabs if you want to chat back and forth on the same computer).
 

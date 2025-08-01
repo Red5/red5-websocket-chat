@@ -28,21 +28,16 @@
         /*
          if we're hitting a red5pro server, ensure the port is 5080 and wsonly is true (for websocket only mode)
           ?capabilities=1  : WebSocket Connection only
-          ?capabilities=2  : SharedObject Connection only
           ?capabilities=3  : RTCConnection
         */
-        var socket = new WebSocket(protocol + '://' + window.location.hostname + ':' + port + '/chat/?capabilities=2');
+        var socket = new WebSocket(protocol + '://' + window.location.hostname + ':' + port + '/chat/?capabilities=1', 'chat');
         // std red5
         //var socket = new WebSocket(protocol + '://' + window.location.hostname + ':' + port + '/chat', 'chat');
         // Connection opened
         socket.addEventListener("open", (event) => {
           console.log("WebSocket is open");
           opened = true;
-          // using shared object get remote and connect before proceeding
-          socket.send('{"sharedObjectGetRemote":{"name":"chat"}}');
-          socket.send('{"sharedObjectConnect":{"name":"chat"}}');
         });
-
         // Listen for messages
         socket.addEventListener("message", (event) => {
           console.log("Message from server ", event.data);
@@ -66,10 +61,7 @@
       $('form').submit(function(){
         if (socket) {
           console.log('bufferedAmount: ' + socket.bufferedAmount);
-          // dirty json
-          //socket.send('{"send":{"data":{"message":"' + $('#m').val() + '"}}}');
-          // shared object
-          socket.send('{"sharedObjectSend":{"name":"chat","method":"messageTransmit","message":{"data":"' + $('#m').val() + '"}}}');
+          socket.send('{"name":"chat","method":"messageTransmit","message":{"data":"' + $('#m').val() + '"}}');
           //socket.send($('#m').val());
         } else {
           console.log('No open socket available for sending...')

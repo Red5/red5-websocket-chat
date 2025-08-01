@@ -77,8 +77,8 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
                 log.debug("Parsed - keys: {}\ncontent: {}", obj.keySet(), obj);
                 msg = obj.toString();
                 // send to all websocket connections matching this connections path
-                sendToAll(path, msg);
-                // send to the shared object matching this connections path
+                //sendToAll(path, msg);
+                // route to message queue matching this connections path
                 router.route(path, msg);
             } catch (Exception e) {
                 log.warn("Exception parsing JSON", e);
@@ -86,14 +86,14 @@ public class WebSocketChatDataListener extends WebSocketDataListener {
         } else {
             log.info("Standard text message");
             // send to all websocket connections matching this connections path
-            sendToAll(path, msg);
-            // send to the shared object matching this connections path
+            //sendToAll(path, msg);
+            // route to message queue matching this connections path
             router.route(path, msg);
         }
     }
 
     /**
-     * Send message to all connected connections.
+     * Send message to all connected WebSocket connections.
      * 
      * @param path routable path / name
      * @param message string

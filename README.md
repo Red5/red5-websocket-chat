@@ -1,12 +1,11 @@
-Chat application
-================
+# Chat application
 
 Red5 WebSocket chat application example.
 
-The example <i>index.html</i> defaults to using a WebSocket connection to localhost on port 5080.
+The example `index.html` defaults to using a WebSocket connection to localhost on port 5080.
 
-# Add the WebSocket filter servlet to webapps that require WebSocket support
- 
+## Add the WebSocket filter servlet to webapps that require WebSocket support
+
 ```xml
         <filter>
             <filter-name>WebSocketFilter</filter-name>
@@ -31,8 +30,8 @@ Deploy your application by copying the war file into your <i>red5/webapps</i> di
 
 After deploy is complete, go to http://localhost:5080/chat/ in your browser (open two tabs if you want to chat back and forth on the same computer).
 
-Pre-compiled WAR
-----------------
+## Pre-compiled WAR
+
 You can find [compiled artifacts via Maven](http://mvnrepository.com/artifact/org.red5.demos/chat)
 
-[Direct Download](https://oss.sonatype.org/content/repositories/releases/org/red5/demos/chat/2.0.0/chat-2.0.0.war)
+[Direct Download](https://oss.sonatype.org/content/repositories/releases/org/red5/demos/chat/2.0.19/chat-2.0.19.war)

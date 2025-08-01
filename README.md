@@ -34,4 +34,4 @@ After deploy is complete, go to http://localhost:5080/chat/ in your browser (ope
 
 You can find [compiled artifacts via Maven](http://mvnrepository.com/artifact/org.red5.demos/chat)
 
-[Direct Download](https://oss.sonatype.org/content/repositories/releases/org/red5/demos/chat/2.0.19/chat-2.0.19.war)
+[Direct Download](https://github.com/Red5/red5-websocket-chat/releases/download/v2.0.19/chat-2.0.19.war)

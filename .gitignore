@@ -8,7 +8,9 @@ target/
 *.zip
 *.tar.gz
 *~
+*.log
 
 Thumbs.db
 build.sh
 log/
+ci/

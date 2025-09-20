@@ -106,7 +106,7 @@ public class Router {
         final IScope appScope = app.getScope();
         sseService = (SSEService) appScope.getServiceHandler(SSEService.BEAN_NAME);
         if (sseService == null) {
-            log.warn("SSE service was null, SSE will not be available");
+            log.warn("SSE service was null, SSE will not be available");            
         } else {
             log.info("SSE service found in application scope: {}", appScope.getName());
         }

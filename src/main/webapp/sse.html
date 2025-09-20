@@ -16,11 +16,9 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        .status {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
+        .status { padding: 5px; margin: 5px 0; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
         .connected {
             background: #d4edda;
             color: #155724;
@@ -59,6 +57,9 @@
         .event.app {
             border-left-color: #dc3545;
         }
+        input, select, textarea, button { margin: 5px; padding: 8px; }
+        .form-group { margin: 10px 0; }
+        label { display: inline-block; width: 120px; }
         button {
             background: #007bff;
             color: white;
@@ -100,17 +101,37 @@
             <strong>Last Event:</strong> <span id="lastEventTime">-</span>
         </div>
     </div>
+
+    <div class="container">
+        <h2>Messages</h2>
+        <form onsubmit="sendMessage(event)">
+            <div class="form-group">
+                <label>Event Type:</label>
+                <input type="text" id="eventType" value="message" placeholder="message" required>
+            </div>
+            <div class="form-group">
+                <label>Event Data:</label>
+                <input type="text" id="eventData" value="Hello SSE" required>
+            </div>
+            <div class="form-group">
+                <label>Target:</label>
+                <select id="targetType" onchange="updateTargetField()">
+                    <option value="all">All Connections</option>
+                    <option value="scope">Specific Scope</option>
+                    <option value="connection">Specific Connection</option>
+                </select>
+            </div>
+            <div class="form-group" id="targetValueGroup" style="display: none;">
+                <label>Target Value:</label>
+                <input type="text" id="targetValue" placeholder="chat">
+            </div>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
     
     <div class="container">
         <h2>Event Log</h2>
         <div id="log" class="log"></div>
-    </div>
-
-    <div class="container">
-        <h2>Messages</h2>
-        <div id="messages" class="log"></div>
-        <input id="m" autocomplete="off" />
-        <button id="sendBtn" onclick="sendMessage()">Send</button>
     </div>
 
     <script>
@@ -181,7 +202,6 @@
             eventSource.onerror = function(event) {
                 updateStatus('disconnected', 'Connection error');
                 log('Connection error occurred', 'error');
-                
                 if (eventSource.readyState === EventSource.CLOSED) {
                     log('Connection closed by server', 'connection');
                 }
@@ -200,34 +220,7 @@
                     document.getElementById('connectionId').textContent = connectionId;
                 }
             });
-            
-            eventSource.addEventListener('message', function(event) {
-                eventCount++;
-                document.getElementById('eventCount').textContent = eventCount;
-                const msgsEl = document.getElementById('messages');
-                const mEl = document.createElement('div');
-                mEl.innerHTML = `${event.data}`;
-                msgsEl.appendChild(mEl);
-                msgsEl.scrollTop = msgsEl.scrollHeight;
-            });
-            
-            eventSource.addEventListener('user.connect', function(event) {
-                eventCount++;
-                document.getElementById('eventCount').textContent = eventCount;
-                log('User connected: ' + event.data, 'user');
-            });
-            
-            eventSource.addEventListener('user.disconnect', function(event) {
-                eventCount++;
-                document.getElementById('eventCount').textContent = eventCount;
-                log('User disconnected: ' + event.data, 'user');
-            });
-            
-            eventSource.addEventListener('user.event', function(event) {
-                eventCount++;
-                document.getElementById('eventCount').textContent = eventCount;
-                log('' + event.data, 'user');
-            });           
+                               
         }
         
         function disconnect() {
@@ -240,15 +233,73 @@
             document.getElementById('connectionId').textContent = '-';
         }
 
-        function sendMessage() {
-            var input = document.getElementById('m');
-            var message = input.value;
-            if (message) {
-                log('Sending message: ' + message);
-                var jsonMessage = '{"name":"chat","method":"messageTransmit","message":{"data":"' + message + '"}}';
-                eventSource.dispatchEvent(new MessageEvent('message', { data: jsonMessage }));
-                // Clear input field
-                input.value = '';
+        //function sendMessage() {
+        //    var input = document.getElementById('m');
+        //    var message = input.value;
+        //    if (message) {
+        //        log('Sending message: ' + message);
+        //        var jsonMessage = '{"name":"chat","method":"messageTransmit","message":{"data":"' + message + '"}}';
+        //        eventSource.dispatchEvent(new MessageEvent('message', { data: jsonMessage }));
+        //        input.value = '';
+        //    }
+        //}
+
+        async function sendMessage(event) {
+            event.preventDefault();
+            const eventType = document.getElementById('eventType').value;
+            const eventData = document.getElementById('eventData').value;
+            const targetType = document.getElementById('targetType').value;
+            const targetValue = document.getElementById('targetValue').value;
+            const sender = 'sse01';
+            // Build request payload
+            const payload = {
+                event: eventType,
+                data: eventData,
+                name: 'chat',
+                method: 'messageTransmit',
+                message: {
+                    data: eventData
+                },
+                sender: sender
+            };
+            if (targetType === 'scope' && targetValue) {
+                payload.scope = targetValue;
+            } else if (targetType === 'connection' && targetValue) {
+                payload.connectionId = targetValue;
+            }
+            try {
+                const response = await fetch(eventUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    log('Event sent successfully', 'success');
+                } else {
+                    log('Failed to send event', 'error');
+                }
+                document.getElementById('eventData').value = '';
+            } catch (error) {
+                log('Error sending event: ${error.message}', 'error');
+            }
+        }
+
+        // Update target field visibility
+        function updateTargetField() {
+            const targetType = document.getElementById('targetType').value;
+            const targetGroup = document.getElementById('targetValueGroup');
+            const targetInput = document.getElementById('targetValue');
+            if (targetType === 'all') {
+                targetGroup.style.display = 'none';
+            } else {
+                targetGroup.style.display = 'block';
+                if (targetType === 'scope') {
+                    targetInput.placeholder = 'chat';
+                } else if (targetType === 'connection') {
+                    targetInput.placeholder = currentConnectionId || 'connection-id';
+                }
             }
         }
 

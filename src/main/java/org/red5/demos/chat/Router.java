@@ -2,11 +2,11 @@ package org.red5.demos.chat;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedTransferQueue;
 
 import org.red5.server.adapter.ApplicationLifecycle;
 import org.red5.server.api.scope.IScope;
+import org.red5.server.net.sse.SSEService;
 import org.red5.server.util.ScopeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +23,8 @@ public class Router {
     private Application app;
 
     private WebSocketChatDataListener wsListener;
+
+    private SSEService sseService;
 
     // messages are stored in a concurrent map to allow for thread-safe access
     // this is not strictly necessary for the router, but it can be useful if you want
@@ -70,6 +72,9 @@ public class Router {
         if (wsListener != null) {
             wsListener.sendToAll(scope.getContextPath(), message);
         }
+        if (sseService != null) {
+            sseService.broadcastToScope(scope, message);
+        }
     }
 
     /**
@@ -98,7 +103,14 @@ public class Router {
     public void setApp(Application app) {
         log.debug("Setting application: {}", app);
         this.app = app;
-        final String contextPath = app.getScope().getContextPath();
+        final IScope appScope = app.getScope();
+        sseService = (SSEService) appScope.getServiceHandler(SSEService.BEAN_NAME);
+        if (sseService == null) {
+            log.warn("SSE service was null, SSE will not be available");
+        } else {
+            log.info("SSE service found in application scope: {}", appScope.getName());
+        }
+        final String contextPath = appScope.getContextPath();
         this.app.addListener(new ApplicationLifecycle() {
 
             @Override
@@ -136,6 +148,9 @@ public class Router {
                         // Here you can implement the logic to route the message
                         if (wsListener != null) {
                             wsListener.sendToAll(contextPath, message);
+                        }
+                        if (sseService != null) {
+                            sseService.broadcastToScope(appScope, message);
                         }
                     }                       
                 } catch (InterruptedException e) {

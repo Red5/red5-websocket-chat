@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.red5</groupId>
         <artifactId>red5-parent</artifactId>
-        <version>2.0.19</version>
+        <version>2.0.23</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.red5.demos</groupId>
@@ -48,10 +48,10 @@
         <skipTests>true</skipTests>
         <!-- to be or not to be verbose -->
         <verbose>false</verbose>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <java.release.level>17</java.release.level>
-        <red5.version>2.0.19</red5.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <java.release.level>21</java.release.level>
+        <red5.version>2.0.23</red5.version>
         <gson.version>2.13.1</gson.version>
     </properties>
     <build>
